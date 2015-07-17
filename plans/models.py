@@ -53,8 +53,8 @@ class Contact(models.Model):
 
 
 class Doctor(models.Model):
-    "A ``Doctor`` is a model for a doctor."
-    plans = models.ManyToManyField(Plan,
+    "A ``Doctor`` specifies a doctor's information."
+    plans = models.ManyToManyField(Plan, through='Contract',
                                    verbose_name="doctor's plans")
     specialties = models.ManyToManyField(Specialty, through='DoctorSpecialty',
                                          verbose_name="doctor's specialties")
@@ -66,6 +66,16 @@ class Doctor(models.Model):
 
     def __str__(self):
         return '%s %s' % (self.first_name, self.last_name)
+
+
+class Contract(models.Model):
+    "A ``Contract`` is a through model specifying a doctor's contracts."
+    doctor = models.ForeignKey(Doctor)
+    plan = models.ForeignKey(Plan)
+    active = models.BooleanField("if the doc's contract is active",
+                                 default=True)
+
+    unique_together = (('doctor', 'plan'))
 
 
 class DoctorSpecialty(models.Model):
@@ -86,3 +96,4 @@ class DoctorContact(models.Model):
                                  default=True)
 
     unique_together = (('doctor', 'contact'))
+

@@ -1,6 +1,11 @@
 docdir
 ======
 
+|build status|_
+
+.. |build status| image:: https://travis-ci.org/DocDir/docdir.svg
+.. _build status: http://travis-ci.org/DocDir/docdir
+
 Prelim Stuff (For Ubuntu):
 --------------------------
 

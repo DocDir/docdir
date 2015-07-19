@@ -6,8 +6,6 @@ from django.db import models, migrations
 
 class Migration(migrations.Migration):
 
-    replaces = [('plans', '0001_initial'), ('plans', '0002_auto_20150717_0313')]
-
     dependencies = [
     ]
 
@@ -17,8 +15,15 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
-                ('phone', models.CharField(blank=True, verbose_name='the phone #', max_length=1)),
+                ('phone', models.CharField(verbose_name='the phone #', max_length=1, blank=True)),
                 ('address', models.TextField(verbose_name='the address')),
+            ],
+        ),
+        migrations.CreateModel(
+            name='Contract',
+            fields=[
+                ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
+                ('active', models.BooleanField(default=True, verbose_name="if the doc's contract is active")),
             ],
         ),
         migrations.CreateModel(
@@ -33,7 +38,7 @@ class Migration(migrations.Migration):
             name='DoctorContact',
             fields=[
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
-                ('active', models.BooleanField(verbose_name="if the doc's contact is active", default=True)),
+                ('active', models.BooleanField(default=True, verbose_name="if the doc's contact is active")),
                 ('contact', models.ForeignKey(to='plans.Contact')),
                 ('doctor', models.ForeignKey(to='plans.Doctor')),
             ],
@@ -42,7 +47,7 @@ class Migration(migrations.Migration):
             name='DoctorSpecialty',
             fields=[
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
-                ('active', models.BooleanField(verbose_name="if the doc's specialty is active", default=True)),
+                ('active', models.BooleanField(default=True, verbose_name="if the doc's specialty is active")),
                 ('doctor', models.ForeignKey(to='plans.Doctor')),
             ],
         ),
@@ -50,15 +55,15 @@ class Migration(migrations.Migration):
             name='Insurer',
             fields=[
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, help_text='the name of the insurer', unique=True)),
+                ('name', models.CharField(help_text='the name of the insurer', unique=True, max_length=200)),
             ],
         ),
         migrations.CreateModel(
             name='Plan',
             fields=[
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, help_text='the name of the plan')),
-                ('insurer', models.ForeignKey(to='plans.Insurer', help_text='the insurer who operates the plan', verbose_name='operating insurer')),
+                ('name', models.CharField(help_text='the name of the plan', max_length=200)),
+                ('insurer', models.ForeignKey(help_text='the insurer who operates the plan', to='plans.Insurer', verbose_name='operating insurer')),
             ],
         ),
         migrations.CreateModel(
@@ -77,25 +82,26 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='doctor',
             name='contacts',
-            field=models.ManyToManyField(through='plans.DoctorContact', verbose_name="doctor's contacts", to='plans.Contact'),
+            field=models.ManyToManyField(through='plans.DoctorContact', to='plans.Contact', verbose_name="doctor's contacts"),
         ),
         migrations.AddField(
             model_name='doctor',
             name='plans',
-            field=models.ManyToManyField(through='plans.Contract', verbose_name="doctor's plans", to='plans.Plan'),
+            field=models.ManyToManyField(through='plans.Contract', to='plans.Plan', verbose_name="doctor's plans"),
         ),
         migrations.AddField(
             model_name='doctor',
             name='specialties',
-            field=models.ManyToManyField(through='plans.DoctorSpecialty', verbose_name="doctor's specialties", to='plans.Specialty'),
+            field=models.ManyToManyField(through='plans.DoctorSpecialty', to='plans.Specialty', verbose_name="doctor's specialties"),
         ),
-        migrations.CreateModel(
-            name='Contract',
-            fields=[
-                ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
-                ('active', models.BooleanField(verbose_name="if the doc's contract is active", default=True)),
-                ('doctor', models.ForeignKey(to='plans.Doctor')),
-                ('plan', models.ForeignKey(to='plans.Plan')),
-            ],
+        migrations.AddField(
+            model_name='contract',
+            name='doctor',
+            field=models.ForeignKey(to='plans.Doctor'),
+        ),
+        migrations.AddField(
+            model_name='contract',
+            name='plan',
+            field=models.ForeignKey(to='plans.Plan'),
         ),
     ]

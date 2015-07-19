@@ -1,6 +1,33 @@
 docdir
 ======
 
+Prelim Stuff (For Ubuntu):
+--------------------------
+
+First Install pip For python3 (https://pip.pypa.io/en/latest/installing.html):
+
+.. code-block:: bash
+   
+   sudo apt-get install python3-pip
+
+Then Install Django 1.8.3 (https://docs.djangoproject.com/en/1.8/topics/install/):
+
+.. code-block:: bash
+   
+   sudo pip3 install Django
+
+Check if SQLite is installed:
+
+.. code-block:: bash
+
+   which sqlite3
+
+If it wasn't, install it:
+
+.. code-block:: bash
+
+   sudo apt-get install sqlite3 libsqlite3-dev
+
 Web Application
 ---------------
 

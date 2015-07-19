@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 
 # A magic number for the name CharField max_lengths
 NAME_LENGTH = 200
@@ -61,6 +63,8 @@ class Doctor(models.Model):
     contacts = models.ManyToManyField(Contact, through='DoctorContact',
                                       verbose_name="doctor's contacts")
 
+    # The doctor is deceased if ``rip``
+    rip = models.BooleanField(default=False)
     first_name = models.CharField(max_length=NAME_LENGTH)
     last_name  = models.CharField(max_length=NAME_LENGTH)
 
@@ -68,28 +72,63 @@ class Doctor(models.Model):
         return '%s %s' % (self.first_name, self.last_name)
 
 
-class Contract(models.Model):
-    "A ``Contract`` is a through model specifying a doctor's contracts."
+class DoctorRelationship(models.Model):
+    """``DoctorRelationship`` is an abstract base class for models connecting a
+    relationship a doctor has for a period of time. For example, a doctor might
+    have multiple contracts with a single health plan over different periods of
+    time.
+
+    These relationship's time periods cannot have overlapping start to end
+    ranges.
+
+    Inheriting models must not override the ``start`` or ``end`` fields.
+    """
+    start = models.DateTimeField(auto_now_add=True)
+    end = models.DateTimeField(null=True, default=None)
+
+    def clean(self):
+        if self.end is not None and self.end < self.start:
+            raise ValidationError({'end': 'Rel cannot end before it starts.'})
+        if not self._intersecting:
+            raise ValidationError('Rel intersects with other periods.')
+
+    def _intersecting(self):
+        """Return the ``QuerySet`` of relationships which have overlapping start
+        to end ranges.
+        """
+        return self.__class__.objects.filter(
+            Q(start__lt=self.start, end__gt=self.start) |
+            Q(start__lt=self.end, end__gt=self.end))
+
+    class Meta:
+        abstract=True
+
+
+class Contract(DoctorRelationship):
+    """A ``Contract`` is a through model specifying a doctor's contracts,
+    i.e. the plans the accept.
+
+    Contracts cannot have intersecting start and end dates."""
     doctor = models.ForeignKey(Doctor)
     plan = models.ForeignKey(Plan)
-    active = models.BooleanField("if the doc's contract is active",
-                                 default=True)
-
-    unique_together = (('doctor', 'plan'))
 
 
-class DoctorSpecialty(models.Model):
-    "``DoctorSpecialty`` is a through model specifying a doctor's specialties."
+class DoctorSpecialty(DoctorRelationship):
+    """``DoctorSpecialty`` is a through model specifying a doctor's
+    specialties.
+
+    These doctor specialties cannot have intersecting start and end dates.
+    """
     specialty = models.ForeignKey(Specialty)
     doctor = models.ForeignKey(Doctor)
     active = models.BooleanField("if the doc's specialty is active",
                                  default=True)
 
-    unique_together = (('doctor', 'contact'))
+class DoctorContact(DoctorRelationship):
+    """A ``DoctorContact`` is a through model specifying a doctor's contacts.
 
-
-class DoctorContact(models.Model):
-    "A ``DoctorContact`` is a through model connecting a doctor to a contact."
+    These doctor contacts cannot have intersecting start and end dates.
+    """
     doctor = models.ForeignKey(Doctor)
     contact = models.ForeignKey(Contact)
     active = models.BooleanField("if the doc's contact is active",

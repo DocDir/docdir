@@ -142,9 +142,14 @@ class DoctorRelationship(models.Model):
         """Return the ``QuerySet`` of relationships which have overlapping start
         to end ranges.
         """
-        return self.__class__.objects.filter(
-            Q(start__lt=self.start, end__gt=self.start) |
-            Q(start__lt=self.end, end__gt=self.end))
+        if self.end is None:
+            return self.__class__.objects.filter(
+                start__lt=self.start, end__gt=self.start)
+        else:
+            return self.__class__.objects.filter(
+                Q(start__lt=self.start, end__gt=self.start) |
+                Q(start__lt=self.end, end__gt=self.end) |
+                Q(start__gt=self.start, end__lt=self.end))
 
     class Meta:
         abstract=True

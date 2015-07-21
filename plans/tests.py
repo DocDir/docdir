@@ -31,10 +31,18 @@ class DoctorRelationshipCase(TestCase):
             # Intersects start
             ((start - datetime.timedelta(days=15),
               start + datetime.timedelta(days=15)), 1),
+            # Intersects interior
+            ((start + datetime.timedelta(days=5),
+              start + datetime.timedelta(days=25)), 1),
+            # Intersects entire
+            ((start - datetime.timedelta(days=5),
+              end + datetime.timedelta(days=5)), 1),
             # No intersection (previous)
             ((start - datetime.timedelta(days=15), start), 0),
             # No intersection (after)
-            ((end, end + datetime.timedelta(days=5)), 0))
+            ((end, end + datetime.timedelta(days=5)), 0),
+            # Start only, intersects
+            ((start + datetime.timedelta(days=15), None), 1))
 
         for (start, end), count in assertions:
             obj_2 = model(start=start, end=end, **kwargs)

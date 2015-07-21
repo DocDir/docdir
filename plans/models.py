@@ -66,9 +66,10 @@ class Contact(models.Model):
     # TODO: max length?
     name = models.CharField(max_length=NAME_LENGTH)
     phone = models.CharField("the phone #",
-                             max_length=1,
+                             max_length=16,
                              blank=True)
-    address = models.TextField("the address")
+    address = models.TextField("the address", blank=True)
+
     # TODO: email?
     # TODO: website?
     # TODO: latlng?

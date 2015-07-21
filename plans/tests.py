@@ -47,3 +47,19 @@ class ContractTest(DoctorRelationshipCase):
         self.assert__intersecting(Contract,
                                   doctor=Doctor.objects.all().first(),
                                   plan=Plan.objects.all().first())
+
+
+class DoctorSpecialtyTest(DoctorRelationshipCase):
+
+    def test__intersecting(self):
+        self.assert__intersecting(DoctorSpecialty,
+                                  doctor=Doctor.objects.all().first(),
+                                  specialty=Specialty.objects.all().first())
+
+
+class DoctorContactTest(DoctorRelationshipCase):
+
+    def test__intersecting(self):
+        self.assert__intersecting(DoctorContact,
+                                  doctor=Doctor.objects.all().first(),
+                                  contact=Contact.objects.all().first())

@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.utils import timezone
 
 # A magic number for the name CharField max_lengths
 NAME_LENGTH = 200
@@ -151,6 +152,13 @@ class DoctorRelationship(models.Model):
                 Q(start__lt=self.end, end__gt=self.end) |
                 Q(start__gt=self.start, end__lt=self.end))
 
+    def active(self):
+        """Return the ``QuerySet`` of active doctor relationships.
+
+        An active relationship has started in the past, but not ended.
+        """
+        return self.end is None and self.start < timezone.now()
+
     class Meta:
         abstract=True
 
@@ -172,8 +180,6 @@ class DoctorSpecialty(DoctorRelationship):
     """
     specialty = models.ForeignKey(Specialty)
     doctor = models.ForeignKey(Doctor)
-    active = models.BooleanField("if the doc's specialty is active",
-                                 default=True)
 
 class DoctorContact(DoctorRelationship):
     """A ``DoctorContact`` is a through model specifying a doctor's contacts.
@@ -182,8 +188,3 @@ class DoctorContact(DoctorRelationship):
     """
     doctor = models.ForeignKey(Doctor)
     contact = models.ForeignKey(Contact)
-    active = models.BooleanField("if the doc's contact is active",
-                                 default=True)
-
-    unique_together = (('doctor', 'contact'))
-

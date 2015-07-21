@@ -8,8 +8,7 @@ from .models import (Doctor, Plan, Specialty, Contact,
 
 
 class DoctorRelationshipCase(TestCase):
-    """
-    Abstract base class for testing doctor relationship test cases.
+    """Abstract base class for testing doctor relationship test cases.
     """
     fixtures = ['simple']
 
@@ -48,26 +47,65 @@ class DoctorRelationshipCase(TestCase):
             obj_2 = model(start=start, end=end, **kwargs)
             self.assertEqual(len(obj_2._intersecting()), count)
 
+    def assert_active(self, model, **defaults):
+        now = timezone.now()
+
+        obj = model(start=now + datetime.timedelta(days=1), **defaults)
+        self.assertFalse(obj.active(),
+                         "a rel which starts in the future isn't active")
+
+        obj = model(end=now - datetime.timedelta(days=1),
+                    **defaults)
+        self.assertFalse(obj.active(),
+                         "a rel with an end isn't active")
+
+        obj = model(start=now + datetime.timedelta(days=1),
+                    end=now + datetime.timedelta(days=2),
+                    **defaults)
+        self.assertFalse(obj.active(),
+                         "a rel with an end + in the future isn't active")
+
+        obj = model(start=now - datetime.timedelta(days=1), **defaults)
+        self.assertTrue(obj.active(),
+                        "a rel with a start in the past and no end is active")
+
 
 class ContractTest(DoctorRelationshipCase):
 
+    def _defaults():
+        return {'doctor': Doctor.objects.all().first(),
+                'plan': Plan.objects.all().first()}
+
     def test__intersecting(self):
-        self.assert__intersecting(Contract,
-                                  doctor=Doctor.objects.all().first(),
-                                  plan=Plan.objects.all().first())
+        self.assert__intersecting(Contract, **ContractTest._defaults())
+
+    def test_active(self):
+        self.assert_active(Contract, **ContractTest._defaults())
 
 
 class DoctorSpecialtyTest(DoctorRelationshipCase):
 
+    def _defaults():
+        return {'doctor': Doctor.objects.all().first(),
+                'specialty': Specialty.objects.all().first()}
+
     def test__intersecting(self):
         self.assert__intersecting(DoctorSpecialty,
-                                  doctor=Doctor.objects.all().first(),
-                                  specialty=Specialty.objects.all().first())
+                                  **DoctorSpecialtyTest._defaults())
+
+    def test_active(self):
+        self.assert_active(DoctorSpecialty, **DoctorSpecialtyTest._defaults())
 
 
 class DoctorContactTest(DoctorRelationshipCase):
 
+    def _defaults():
+        return {'doctor': Doctor.objects.all().first(),
+                'contact': Contact.objects.all().first()}
+
     def test__intersecting(self):
         self.assert__intersecting(DoctorContact,
-                                  doctor=Doctor.objects.all().first(),
-                                  contact=Contact.objects.all().first())
+                                  **DoctorContactTest._defaults())
+
+    def test_active(self):
+        self.assert_active(DoctorContact, **DoctorContactTest._defaults())

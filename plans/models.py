@@ -6,8 +6,19 @@ from django.utils import timezone
 # A magic number for the name CharField max_lengths
 NAME_LENGTH = 200
 
-class Insurer(models.Model):
-    """An ``Insurer`` is a model for a single health insurer."""
+class BaseModel(models.Model):
+    """ The ``BaseModel`` specifies the general model fields and
+    behaviours.
+    """
+    created = models.DateTimeField(auto_now_add = True,
+                                   null = True,
+                                   verbose_name = "timestamp record created")
+
+    class Meta:
+        abstract=True
+
+class Insurer(BaseModel):
+    """ An ``Insurer`` is a model for a single health insurer."""
     name = models.CharField(max_length=NAME_LENGTH,
                             unique=True,
                             help_text="the name of the insurer")
@@ -16,8 +27,8 @@ class Insurer(models.Model):
         return self.name
 
 
-class DataSource(models.Model):
-    """A ``DataSource`` is a model for where the data was pulled from"""
+class DataSource(BaseModel):
+    """ A ``DataSource`` is a model for where the data was pulled from"""
     SOURCES = (
         ('C', 'Crawled'),
         ('V', 'Official Release csv'),
@@ -36,7 +47,7 @@ class DataSource(models.Model):
         return "%s, %s" % (self.name, self.source_type)
 
 
-class Plan(models.Model):
+class Plan(BaseModel):
     """A ``Plan`` is a model for a health plan."""
     insurer = models.ForeignKey(Insurer,
                                 verbose_name="operating insurer",
@@ -49,7 +60,7 @@ class Plan(models.Model):
         return self.name
 
 
-class Specialty(models.Model):
+class Specialty(BaseModel):
     """A ``Specialty`` is a category of doctor specialty.
 
     Family and primary care should be individual categories of specialty.
@@ -61,7 +72,7 @@ class Specialty(models.Model):
         return self.name
 
 
-class Contact(models.Model):
+class Contact(BaseModel):
     """The ``Contact`` model specifies contact information."""
     # TODO: max length?
     name = models.CharField(max_length=NAME_LENGTH)
@@ -109,9 +120,6 @@ class DoctorRelationship(models.Model):
     """
     start = models.DateTimeField(null=True, default=None)
     end = models.DateTimeField(null=True, default=None)
-    created = models.DateTimeField(auto_now_add = True,
-                                   null = True,
-                                   verbose_name = "timestamp record created")
     score = models.FloatField(default = 1.,
                               verbose_name = "data reliability score")
     source = models.ForeignKey(DataSource,
@@ -175,7 +183,7 @@ class DoctorRelationship(models.Model):
         abstract=True
 
 
-class Contract(DoctorRelationship):
+class Contract(BaseModel, DoctorRelationship):
     """A ``Contract`` is a through model specifying a doctor's contracts,
     i.e. the plans the accept.
 
@@ -184,7 +192,7 @@ class Contract(DoctorRelationship):
     plan = models.ForeignKey(Plan)
 
 
-class DoctorSpecialty(DoctorRelationship):
+class DoctorSpecialty(BaseModel, DoctorRelationship):
     """``DoctorSpecialty`` is a through model specifying a doctor's
     specialties.
 
@@ -194,7 +202,7 @@ class DoctorSpecialty(DoctorRelationship):
     doctor = models.ForeignKey(Doctor)
 
 
-class DoctorContact(DoctorRelationship):
+class DoctorContact(BaseModel, DoctorRelationship):
     """A ``DoctorContact`` is a through model specifying a doctor's contacts.
 
     These doctor contacts cannot have intersecting start and end dates.

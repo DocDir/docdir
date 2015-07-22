@@ -154,9 +154,22 @@ class DoctorRelationship(models.Model):
     def active(self):
         """Return whether the relationship is active.
 
-        An active relationship has started in the past, but not ended.
+        An active relationship has:
+
+        - no start, or
+        - started in the past, but not ended.
         """
-        return self.end is None and self.start < timezone.now()
+        now = timezone.now()
+        if self.end is None:
+            if self.start is None:
+                return True
+            else:
+                return self.start < now
+        else:
+            if self.start is None:
+                return self.end > now
+            else:
+                return self.start < now and self.end > now
 
     class Meta:
         abstract=True

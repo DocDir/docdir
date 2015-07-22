@@ -72,6 +72,7 @@ class DoctorRelationshipCase(TestCase):
 
 class ContractTest(DoctorRelationshipCase):
 
+    @staticmethod
     def _defaults():
         return {'doctor': Doctor.objects.all().first(),
                 'plan': Plan.objects.all().first()}
@@ -85,6 +86,7 @@ class ContractTest(DoctorRelationshipCase):
 
 class DoctorSpecialtyTest(DoctorRelationshipCase):
 
+    @staticmethod
     def _defaults():
         return {'doctor': Doctor.objects.all().first(),
                 'specialty': Specialty.objects.all().first()}
@@ -99,6 +101,7 @@ class DoctorSpecialtyTest(DoctorRelationshipCase):
 
 class DoctorContactTest(DoctorRelationshipCase):
 
+    @staticmethod
     def _defaults():
         return {'doctor': Doctor.objects.all().first(),
                 'contact': Contact.objects.all().first()}

@@ -23,10 +23,9 @@ class DataSource(models.Model):
         ('V', 'Official Release csv'),
         ('P', 'Official Release pdf'),
     )
-    
+
     name = models.CharField(max_length = NAME_LENGTH,
-                            verbose_name = "organization name",
-)
+                            verbose_name = "organization name")
     source_type = models.CharField(max_length = 1, choices = SOURCES)
     notes = models.CharField(max_length = NAME_LENGTH,
                              help_text = "assorted notes re: data source")
@@ -88,8 +87,8 @@ class Doctor(models.Model):
     contacts = models.ManyToManyField(Contact, through='DoctorContact',
                                       verbose_name="doctor's contacts")
 
-    # The doctor is deceased if ``rip``
-    rip = models.BooleanField(default=False)
+    rip = models.BooleanField(default=False,
+                              help_text="whether the doctor is alive")
     first_name = models.CharField(max_length=NAME_LENGTH)
     last_name  = models.CharField(max_length=NAME_LENGTH)
 
@@ -121,13 +120,13 @@ class DoctorRelationship(models.Model):
                                help_text = "where relationship data comes from")
 
     def validate_time(self):
-        """ Raises valdiation error if end < start""" 
+        """ Raises valdiation error if end < start"""
         if self.end is not None and self.start is not None and self.end < self.start:
             raise ValidationError({'end': 'Relationship cannot end before it starts.'})
 
     def validate(self, *args, **kwargs):
-        """ Template method to be overridden by child class.
-        This further validates the model. It should raise a ValidationError if necessary.
+        """Template method to be overridden by child class. This further validates the
+        model. It should raise a ValidationError if necessary.
         """
         pass
 
@@ -138,7 +137,7 @@ class DoctorRelationship(models.Model):
         self.validate_time()
         self.validate()
         super(DoctorRelationship, self).save(*args, **kwargs)
-        
+
     def _intersecting(self):
         """Return the ``QuerySet`` of relationships which have overlapping start
         to end ranges.
@@ -153,7 +152,7 @@ class DoctorRelationship(models.Model):
                 Q(start__gt=self.start, end__lt=self.end))
 
     def active(self):
-        """Return the ``QuerySet`` of active doctor relationships.
+        """Return whether the relationship is active.
 
         An active relationship has started in the past, but not ended.
         """
@@ -180,6 +179,7 @@ class DoctorSpecialty(DoctorRelationship):
     """
     specialty = models.ForeignKey(Specialty)
     doctor = models.ForeignKey(Doctor)
+
 
 class DoctorContact(DoctorRelationship):
     """A ``DoctorContact`` is a through model specifying a doctor's contacts.

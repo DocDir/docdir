@@ -133,8 +133,8 @@ class DoctorRelationship(models.Model):
         """ Overrides ``models.Models.save()`` to include model validation
         If overridden, please be sure to include ``validate_time()``
         """
-        validate_time()
-        validate()
+        self.validate_time()
+        self.validate()
         super(DoctorRelationship, self).save(*args, **kwargs)
         
     def _intersecting(self):
